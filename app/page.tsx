@@ -16,6 +16,15 @@ interface AttendanceRecord {
   timestamp: string;
 }
 
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
@@ -23,7 +32,7 @@ export default function Home() {
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const [isPWAInstallable, setIsPWAInstallable] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
@@ -39,7 +48,7 @@ export default function Home() {
     window.addEventListener('beforeinstallprompt', (e) => {
       console.log('PWA 설치 가능!', e);
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
       setIsPWAInstallable(true);
     });
 
@@ -157,9 +166,12 @@ export default function Home() {
     try {
       if (deferredPrompt) {
         // Show the install prompt
-        const { outcome } = await deferredPrompt.prompt();
+        await deferredPrompt.prompt();
         
-        if (outcome === 'accepted') {
+        // Get the choice result
+        const choiceResult = await deferredPrompt.userChoice;
+        
+        if (choiceResult.outcome === 'accepted') {
           console.log('사용자가 PWA 설치를 수락했습니다.');
           setIsInstalled(true);
           setIsPWAInstallable(false);
