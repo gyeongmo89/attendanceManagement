@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오프라인 - Mediv 근태관리 시스템</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            background-color: #f9fafb;
+            color: #1f2937;
+        }
+        .container {
+            max-width: 600px;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #7c3aed;
+            margin-bottom: 16px;
+        }
+        p {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        .retry-button {
+            margin-top: 24px;
+            padding: 12px 24px;
+            background-color: #7c3aed;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+        .retry-button:hover {
+            background-color: #6d28d9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>인터넷 연결 없음</h1>
+        <p>현재 오프라인 상태입니다.</p>
+        <p>인터넷에 연결되면 자동으로 데이터가 동기화됩니다.</p>
+        <button class="retry-button" onclick="window.location.reload()">다시 시도</button>
+    </div>
+</body>
+</html>

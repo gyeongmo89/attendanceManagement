@@ -1,0 +1,41 @@
+{
+  "name": "Mediv 근태관리 시스템",
+  "short_name": "Mediv",
+  "description": "Mediv 근태관리 시스템 - 출퇴근 관리 앱",
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "background_color": "#7c3aed",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/logo-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/logo-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "출근하기",
+      "short_name": "출근",
+      "description": "출근 체크인",
+      "url": "/?action=checkin",
+      "icons": [{ "src": "/icons/checkin-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "퇴근하기",
+      "short_name": "퇴근",
+      "description": "퇴근 체크아웃",
+      "url": "/?action=checkout",
+      "icons": [{ "src": "/icons/checkout-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}
