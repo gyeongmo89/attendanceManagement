@@ -2,8 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import LoginForm from './components/LoginForm';
-import AttendanceButtons from './components/AttendanceButtons';
+import { API_BASE_URL } from './config/api';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -22,6 +21,8 @@ interface BeforeInstallPromptEvent extends Event {
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [isPWAInstallable, setIsPWAInstallable] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -61,7 +62,7 @@ export default function Home() {
         });
     }
 
-    // 로그인 상태 확인
+    // Check if user is already logged in
     const token = localStorage.getItem("token");
     if (token) {
       setIsLoggedIn(true);
@@ -73,71 +74,29 @@ export default function Home() {
     };
   }, []);
 
-  const handleLogin = async (username: string, password: string) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8000/token', {
-        method: 'POST',
+      const response = await fetch(`${API_BASE_URL}/token`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: new URLSearchParams({
-          username,
-          password,
-        }),
+        body: `username=${encodeURIComponent(
+          username
+        )}&password=${encodeURIComponent(password)}`,
       });
 
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
-
-      const data = await response.json();
-      localStorage.setItem('token', data.access_token);
-      setIsLoggedIn(true);
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    }
-  };
-
-  const handleCheckIn = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-      const response = await fetch('http://localhost:8000/attendance/check-in', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Check-in failed');
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem("token", data.access_token);
+        setIsLoggedIn(true);
+      } else {
+        alert("로그인 실패");
       }
     } catch (error) {
-      console.error('Check-in error:', error);
-      throw error;
-    }
-  };
-
-  const handleCheckOut = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-      const response = await fetch('http://localhost:8000/attendance/check-out', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Check-out failed');
-      }
-    } catch (error) {
-      console.error('Check-out error:', error);
-      throw error;
+      console.error("Login error:", error);
+      alert("로그인 중 오류가 발생했습니다.");
     }
   };
 
@@ -181,26 +140,123 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 space-y-8">
-      <h1 className="text-2xl font-bold text-center">Mediv 근태관리 시스템</h1>
-      
+    <div className="min-h-screen bg-purple-600">
       {!isLoggedIn ? (
-        <LoginForm onLogin={handleLogin} />
+        <div className="flex min-h-screen items-center justify-center relative">
+          <button
+            onClick={handleDownloadPwa}
+            className="absolute top-4 right-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-md hover:from-purple-600 hover:to-pink-600 z-10"
+          >
+            출퇴근 앱 다운로드
+          </button>
+          <div className="bg-white p-8 rounded-lg shadow-md w-96">
+            <div className="flex justify-center mb-4">
+              <div className="rounded-full overflow-hidden border-2 border-purple-500 p-1">
+                <div 
+                  className="w-16 h-16 bg-purple-200 flex items-center justify-center text-purple-700 font-bold text-xl"
+                >
+                  M
+                </div>
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold mb-6 text-center">
+              Mediv 근태관리 시스템
+            </h1>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <input
+                  type="text"
+                  placeholder="아이디"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="mt-1 block w-full text-stone-900 rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2"
+                />
+              </div>
+              <div>
+                <input
+                  type="password"
+                  placeholder="비밀번호"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="mt-1 block w-full text-stone-900 rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white p-2 rounded-md hover:from-purple-600 hover:to-pink-600"
+              >
+                로그인
+              </button>
+            </form>
+            <div className="mt-6 text-center text-sm text-gray-600">
+              <p>The copyright of this system belongs to Kimgyeongmo.</p>
+              <p>Version 1.0.0</p>
+            </div>
+          </div>
+        </div>
       ) : (
-        <AttendanceButtons 
-          onCheckIn={handleCheckIn}
-          onCheckOut={handleCheckOut}
-        />
-      )}
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold">출퇴근 관리</h1>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => {
+                  const token = localStorage.getItem('token');
+                  if (!token) return;
 
-      {!isInstalled && isPWAInstallable && (
-        <button
-          onClick={handleDownloadPwa}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          출퇴근 앱 다운로드
-        </button>
+                  fetch(`${API_BASE_URL}/attendance/check-in`, {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                    },
+                  })
+                  .then(response => {
+                    if (!response.ok) {
+                      throw new Error('Check-in failed');
+                    }
+                    alert('출근 처리되었습니다.');
+                  })
+                  .catch(error => {
+                    console.error('Check-in error:', error);
+                    alert('출근 처리 중 오류가 발생했습니다.');
+                  });
+                }}
+                className="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                출근하기
+              </button>
+              <button
+                onClick={() => {
+                  const token = localStorage.getItem('token');
+                  if (!token) return;
+
+                  fetch(`${API_BASE_URL}/attendance/check-out`, {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                    },
+                  })
+                  .then(response => {
+                    if (!response.ok) {
+                      throw new Error('Check-out failed');
+                    }
+                    alert('퇴근 처리되었습니다.');
+                  })
+                  .catch(error => {
+                    console.error('Check-out error:', error);
+                    alert('퇴근 처리 중 오류가 발생했습니다.');
+                  });
+                }}
+                className="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                퇴근하기
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-    </main>
+    </div>
   );
 }
